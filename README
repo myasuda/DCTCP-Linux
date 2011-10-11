@@ -17,9 +17,9 @@ Mohammad Alizadeh, Stanford University
 
 wget http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.38.3.tar.bz2
 tar jxvf linux-2.6.38.3.tar.bz2
-cp dctcp-2.6.38.3-rev1_0_0.patch linux-2.6.38.3
+cp dctcp-2.6.38.3-rev1.1.0.patch linux-2.6.38.3
 cd linux-2.6.38.3
-patch -p1 < dctcp-2.6.38.3-rev1_0_0.patch
+patch -p1 < dctcp-2.6.38.3-rev1.0.0.patch
 
 After applying patch, please compile the kernel as usual.
 No special kernel configuration is necessary for DCTCP.
@@ -30,10 +30,10 @@ DCTCP (over Reno) is enabled by the following commands.
 
 sysctl -w net.ipv4.tcp_congestion_control=reno
 sysctl -w net.ipv4.tcp_dctcp_enable=1
+sysctl -w net.ipv4.net.ipv4.tcp_ecn=1
 
 DCTCP is enabled when kernel parameter net.ipv4.tcp_dctcp_enable is 1
-(default value is 0). When DCTCP is enabled, the ECN parameter net.ipv4.tcp_ecn 
-is ignored.
+(default value is 0) and net.ipv4.tcp_ecn is 1. (default value is 2).
 
 In testing DCTCP, the DCTCP kernel must be running both on the sender and 
 the receiver. In addition, ECN functionality must be enabled at the switch. 
@@ -58,4 +58,16 @@ In every RTT, dctcp_alpha is updated as follows:
 
 dctcp_alpha = (1-g) * dctcp_alpha + g * F.
 (F is the fraction of marked data during the last RTT.)
+
+[Changelog]
+
+2011 Apl 29 - Rev1.0.0
+2011 Apl 29 - Rev1.1.0
+
+- Fixed a bug in initializing DCTCP internal parameters in the case of passive open
+- Erased the unneccesary variable tp->prior_ack
+- Changed the setting for enabling dctcp, for enabling dctcp, both 
+  net.ipv4.tcp_dctcp_enable and net.ipv4.tcp_ecn are needed to be 1.
+
+
 
