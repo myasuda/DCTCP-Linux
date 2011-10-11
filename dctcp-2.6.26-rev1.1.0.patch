@@ -1,7 +1,7 @@
-diff -Naur linux-2.6.38.3/include/linux/sysctl.h linux-2.6.38.3-dctcp-rev1_0_0/include/linux/sysctl.h
---- linux-2.6.38.3/include/linux/sysctl.h	2011-04-14 13:03:56.000000000 -0700
-+++ linux-2.6.38.3-dctcp-rev1_0_0/include/linux/sysctl.h	2011-04-19 22:46:04.000000000 -0700
-@@ -425,6 +425,9 @@
+diff -Naur linux-2.6.26/include/linux/sysctl.h linux-2.6.26-dctcp-rev1.1.0/include/linux/sysctl.h
+--- linux-2.6.26/include/linux/sysctl.h	2008-07-13 14:51:29.000000000 -0700
++++ linux-2.6.26-dctcp-rev1.1.0/include/linux/sysctl.h	2011-10-07 14:41:50.000000000 -0700
+@@ -435,6 +435,9 @@
  	NET_TCP_ALLOWED_CONG_CONTROL=123,
  	NET_TCP_MAX_SSTHRESH=124,
  	NET_TCP_FRTO_RESPONSE=125,
@@ -11,30 +11,29 @@ diff -Naur linux-2.6.38.3/include/linux/sysctl.h linux-2.6.38.3-dctcp-rev1_0_0/i
  };
  
  enum {
-diff -Naur linux-2.6.38.3/include/linux/tcp.h linux-2.6.38.3-dctcp-rev1_0_0/include/linux/tcp.h
---- linux-2.6.38.3/include/linux/tcp.h	2011-04-14 13:03:56.000000000 -0700
-+++ linux-2.6.38.3-dctcp-rev1_0_0/include/linux/tcp.h	2011-04-19 22:46:19.000000000 -0700
-@@ -455,6 +455,16 @@
+diff -Naur linux-2.6.26/include/linux/tcp.h linux-2.6.26-dctcp-rev1.1.0/include/linux/tcp.h
+--- linux-2.6.26/include/linux/tcp.h	2008-07-13 14:51:29.000000000 -0700
++++ linux-2.6.26-dctcp-rev1.1.0/include/linux/tcp.h	2011-10-07 14:53:45.000000000 -0700
+@@ -405,6 +405,15 @@
+ /* TCP MD5 Signagure Option information */
  	struct tcp_md5sig_info	*md5sig_info;
  #endif
- 
++
 +/* DCTCP Specific Parameters */
 + 	u32	acked_bytes_ecn;
 + 	u32	acked_bytes_total;
-+ 	u32	prior_ack;
 + 	u32	prior_rcv_nxt;
 + 	u32	dctcp_alpha;
 + 	u32	next_seq;
 + 	u32	ce_state;	/* 0: last pkt was non-ce , 1: last pkt was ce */
 + 	u32	delayed_ack_reserved;
-+
- 	/* When the cookie options are generated and exchanged, then this
- 	 * object holds a reference to them (cookie_values->kref).  Also
- 	 * contains related tcp_cookie_transactions fields.
-diff -Naur linux-2.6.38.3/include/net/tcp.h linux-2.6.38.3-dctcp-rev1_0_0/include/net/tcp.h
---- linux-2.6.38.3/include/net/tcp.h	2011-04-14 13:03:56.000000000 -0700
-+++ linux-2.6.38.3-dctcp-rev1_0_0/include/net/tcp.h	2011-04-19 22:46:36.000000000 -0700
-@@ -220,6 +220,9 @@
+ };
+ 
+ static inline struct tcp_sock *tcp_sk(const struct sock *sk)
+diff -Naur linux-2.6.26/include/net/tcp.h linux-2.6.26-dctcp-rev1.1.0/include/net/tcp.h
+--- linux-2.6.26/include/net/tcp.h	2008-07-13 14:51:29.000000000 -0700
++++ linux-2.6.26-dctcp-rev1.1.0/include/net/tcp.h	2011-10-07 14:41:50.000000000 -0700
+@@ -214,6 +214,9 @@
  extern int sysctl_tcp_fack;
  extern int sysctl_tcp_reordering;
  extern int sysctl_tcp_ecn;
@@ -42,70 +41,69 @@ diff -Naur linux-2.6.38.3/include/net/tcp.h linux-2.6.38.3-dctcp-rev1_0_0/includ
 +extern int sysctl_tcp_dctcp_enable;
 +extern int sysctl_tcp_dctcp_shift_g;
  extern int sysctl_tcp_dsack;
- extern long sysctl_tcp_mem[3];
+ extern int sysctl_tcp_mem[3];
  extern int sysctl_tcp_wmem[3];
-diff -Naur linux-2.6.38.3/kernel/sysctl_binary.c linux-2.6.38.3-dctcp-rev1_0_0/kernel/sysctl_binary.c
---- linux-2.6.38.3/kernel/sysctl_binary.c	2011-04-14 13:03:56.000000000 -0700
-+++ linux-2.6.38.3-dctcp-rev1_0_0/kernel/sysctl_binary.c	2011-04-19 22:47:06.000000000 -0700
-@@ -373,6 +373,9 @@
- 	{ CTL_INT,	NET_TCP_FACK,				"tcp_fack" },
- 	{ CTL_INT,	NET_TCP_REORDERING,			"tcp_reordering" },
- 	{ CTL_INT,	NET_TCP_ECN,				"tcp_ecn" },
-+	{ CTL_INT,	NET_TCP_DELAYED_ACK,			"tcp_delayed_ack" },
-+	{ CTL_INT,	NET_TCP_DCTCP_ENABLE,			"tcp_dctcp_enable" },
-+	{ CTL_INT,	NET_TCP_DCTCP_SHIFT_G,			"tcp_dctcp_shift_g" },
- 	{ CTL_INT,	NET_TCP_DSACK,				"tcp_dsack" },
- 	{ CTL_INT,	NET_TCP_MEM,				"tcp_mem" },
- 	{ CTL_INT,	NET_TCP_WMEM,				"tcp_wmem" },
-diff -Naur linux-2.6.38.3/net/ipv4/sysctl_net_ipv4.c linux-2.6.38.3-dctcp-rev1_0_0/net/ipv4/sysctl_net_ipv4.c
---- linux-2.6.38.3/net/ipv4/sysctl_net_ipv4.c	2011-04-14 13:03:56.000000000 -0700
-+++ linux-2.6.38.3-dctcp-rev1_0_0/net/ipv4/sysctl_net_ipv4.c	2011-04-19 22:47:31.000000000 -0700
-@@ -392,6 +392,27 @@
- 		.proc_handler	= proc_dointvec
+diff -Naur linux-2.6.26/kernel/sysctl_check.c linux-2.6.26-dctcp-rev1.1.0/kernel/sysctl_check.c
+--- linux-2.6.26/kernel/sysctl_check.c	2008-07-13 14:51:29.000000000 -0700
++++ linux-2.6.26-dctcp-rev1.1.0/kernel/sysctl_check.c	2011-10-07 14:41:50.000000000 -0700
+@@ -353,6 +353,9 @@
+ 	{ NET_TCP_FACK,				"tcp_fack" },
+ 	{ NET_TCP_REORDERING,			"tcp_reordering" },
+ 	{ NET_TCP_ECN,				"tcp_ecn" },
++	{ NET_TCP_DELAYED_ACK,                  "tcp_delayed_ack" },
++	{ NET_TCP_DCTCP_ENABLE,                 "tcp_dctcp_enable" },
++        { NET_TCP_DCTCP_SHIFT_G,                "tcp_dctcp_shift_g" },
+ 	{ NET_TCP_DSACK,			"tcp_dsack" },
+ 	{ NET_TCP_MEM,				"tcp_mem" },
+ 	{ NET_TCP_WMEM,				"tcp_wmem" },
+diff -Naur linux-2.6.26/net/ipv4/sysctl_net_ipv4.c linux-2.6.26-dctcp-rev1.1.0/net/ipv4/sysctl_net_ipv4.c
+--- linux-2.6.26/net/ipv4/sysctl_net_ipv4.c	2008-07-13 14:51:29.000000000 -0700
++++ linux-2.6.26-dctcp-rev1.1.0/net/ipv4/sysctl_net_ipv4.c	2011-10-07 14:41:50.000000000 -0700
+@@ -506,6 +506,30 @@
+ 		.proc_handler	= &proc_dointvec
  	},
  	{
++		.ctl_name	= NET_TCP_DELAYED_ACK,
 +		.procname	= "tcp_delayed_ack",
 +		.data		= &sysctl_tcp_delayed_ack,
 +		.maxlen		= sizeof(int),
 +		.mode		= 0644,
-+		.proc_handler	= proc_dointvec
++		.proc_handler	= &proc_dointvec
 +	},
 +	{
++		.ctl_name	= NET_TCP_DCTCP_ENABLE,
 +		.procname	= "tcp_dctcp_enable",
 +		.data		= &sysctl_tcp_dctcp_enable,
 +		.maxlen		= sizeof(int),
 +		.mode		= 0644,
-+		.proc_handler	= proc_dointvec
++		.proc_handler	= &proc_dointvec
 +	},
 +	{
++		.ctl_name	= NET_TCP_DCTCP_SHIFT_G,
 +		.procname	= "tcp_dctcp_shift_g",
 +		.data		= &sysctl_tcp_dctcp_shift_g,
 +		.maxlen		= sizeof(int),
 +		.mode		= 0644,
-+		.proc_handler	= proc_dointvec
++		.proc_handler	= &proc_dointvec
 +	},
 +	{
+ 		.ctl_name	= NET_TCP_DSACK,
  		.procname	= "tcp_dsack",
  		.data		= &sysctl_tcp_dsack,
- 		.maxlen		= sizeof(int),
-diff -Naur linux-2.6.38.3/net/ipv4/tcp_input.c linux-2.6.38.3-dctcp-rev1_0_0/net/ipv4/tcp_input.c
---- linux-2.6.38.3/net/ipv4/tcp_input.c	2011-04-14 13:03:56.000000000 -0700
-+++ linux-2.6.38.3-dctcp-rev1_0_0/net/ipv4/tcp_input.c	2011-04-19 22:47:52.000000000 -0700
-@@ -98,6 +98,13 @@
- int sysctl_tcp_moderate_rcvbuf __read_mostly = 1;
- int sysctl_tcp_abc __read_mostly;
- 
+diff -Naur linux-2.6.26/net/ipv4/tcp_input.c linux-2.6.26-dctcp-rev1.1.0/net/ipv4/tcp_input.c
+--- linux-2.6.26/net/ipv4/tcp_input.c	2008-07-13 14:51:29.000000000 -0700
++++ linux-2.6.26-dctcp-rev1.1.0/net/ipv4/tcp_input.c	2011-10-07 14:53:21.000000000 -0700
+@@ -79,6 +79,9 @@
+ int sysctl_tcp_fack __read_mostly = 1;
+ int sysctl_tcp_reordering __read_mostly = TCP_FASTRETRANS_THRESH;
+ int sysctl_tcp_ecn __read_mostly;
 +int sysctl_tcp_delayed_ack __read_mostly = 1;
-+EXPORT_SYMBOL(sysctl_tcp_delayed_ack);
 +int sysctl_tcp_dctcp_enable __read_mostly;
-+EXPORT_SYMBOL(sysctl_tcp_dctcp_enable);
-+int sysctl_tcp_dctcp_shift_g  __read_mostly = 4; /* g=1/2^4 */
-+EXPORT_SYMBOL(sysctl_tcp_dctcp_shift_g);
-+
- #define FLAG_DATA		0x01 /* Incoming frame contained data.		*/
- #define FLAG_WIN_UPDATE		0x02 /* Incoming ACK was a window update.	*/
- #define FLAG_DATA_ACKED		0x04 /* This ACK acknowledged new data.		*/
-@@ -217,16 +224,70 @@
++int sysctl_tcp_dctcp_shift_g  __read_mostly = 5; /* g=1/2^5 */
+ int sysctl_tcp_dsack __read_mostly = 1;
+ int sysctl_tcp_app_win __read_mostly = 31;
+ int sysctl_tcp_adv_win_scale __read_mostly = 2;
+@@ -212,16 +215,68 @@
  	tp->ecn_flags &= ~TCP_ECN_DEMAND_CWR;
  }
  
@@ -136,7 +134,6 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_input.c linux-2.6.38.3-dctcp-rev1_0_0/net
 +		/* generate previous ack with CE=0 */
 +		tp->ecn_flags &= ~TCP_ECN_DEMAND_CWR;
 +		tp->rcv_nxt = tp->prior_rcv_nxt;
-+		/* printk("CE=0 rcv_nxt= %u nxt= %u\n",tp->rcv_nxt, temp_rcv_nxt);  */
 +		tcp_send_ack(sk);
 +		/* recover current rcv_nxt */
 +		tp->rcv_nxt = temp_rcv_nxt;
@@ -165,7 +162,6 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_input.c linux-2.6.38.3-dctcp-rev1_0_0/net
 +		/* generate previous ack with CE=1 */
 +		tp->ecn_flags |= TCP_ECN_DEMAND_CWR;
 +		tp->rcv_nxt = tp->prior_rcv_nxt;
-+		/* printk("CE=1 rcv_nxt= %u nxt= %u\n",tp->rcv_nxt, temp_rcv_nxt);  */
 +		tcp_send_ack(sk);
 +		/* recover current rcv_nxt */
 +		tp->rcv_nxt = temp_rcv_nxt;
@@ -184,7 +180,7 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_input.c linux-2.6.38.3-dctcp-rev1_0_0/net
  	}
  }
  
-@@ -581,6 +642,8 @@
+@@ -572,6 +627,8 @@
  		 */
  		tcp_incr_quickack(sk);
  		icsk->icsk_ack.ato = TCP_ATO_MIN;
@@ -193,7 +189,7 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_input.c linux-2.6.38.3-dctcp-rev1_0_0/net
  	} else {
  		int m = now - icsk->icsk_ack.lrcvtime;
  
-@@ -601,7 +664,7 @@
+@@ -592,7 +649,7 @@
  	}
  	icsk->icsk_ack.lrcvtime = now;
  
@@ -202,7 +198,7 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_input.c linux-2.6.38.3-dctcp-rev1_0_0/net
  
  	if (skb->len >= 128)
  		tcp_grow_window(sk, skb);
-@@ -827,19 +890,54 @@
+@@ -836,19 +893,54 @@
  	struct tcp_sock *tp = tcp_sk(sk);
  	const struct inet_connection_sock *icsk = inet_csk(sk);
  
@@ -237,20 +233,20 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_input.c linux-2.6.38.3-dctcp-rev1_0_0/net
 +		    tp->snd_ssthresh =  cwnd_new;
 +		    
 +		    /* printk("%llu alpha= %d ssth old= %d new= %d\n", */
-+		    /* 		    			   ktime_to_us(ktime_get_real()), */
-+		    /* 		    			   tp->dctcp_alpha, */
-+		    /* 		    			   ssthresh_old, */
-+		    /* 		    			   tp->snd_ssthresh); */
++		    /* 			   ktime_to_us(ktime_get_real()), */
++		    /* 			   tp->dctcp_alpha, */
++		    /* 			   ssthresh_old, */
++		    /* 			   tp->snd_ssthresh); */
 +		  }
 +		  
 +		  cwnd_old = tp->snd_cwnd;
 +		  tp->snd_cwnd = cwnd_new;
 +		  
 +		  /* printk("%llu alpha= %d cwnd old= %d new= %d\n", */
-+		  /* 		  			 ktime_to_us(ktime_get_real()), */
-+		  /* 		  			 tp->dctcp_alpha, */
-+		  /* 		  			 cwnd_old, */
-+		  /* 		  			 tp->snd_cwnd); */
++		  /* 			 ktime_to_us(ktime_get_real()), */
++		  /* 			 tp->dctcp_alpha, */
++		  /* 			 cwnd_old, */
++		  /* 			 tp->snd_cwnd); */
 +		}
 +		
  		tp->snd_cwnd_cnt = 0;
@@ -262,51 +258,44 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_input.c linux-2.6.38.3-dctcp-rev1_0_0/net
  		tcp_set_ca_state(sk, TCP_CA_CWR);
  	}
  }
-@@ -2857,6 +2955,7 @@
+@@ -2513,7 +2605,8 @@
  		tcp_try_keep_open(sk);
  		tcp_moderate_cwnd(tp);
  	} else {
+-		tcp_cwnd_down(sk, flag);
 +	  if(!sysctl_tcp_dctcp_enable)
- 		tcp_cwnd_down(sk, flag);
++	    tcp_cwnd_down(sk, flag);
  	}
  }
-@@ -3622,6 +3721,9 @@
+ 
+@@ -3216,6 +3309,9 @@
  	int prior_packets;
  	int frto_cwnd = 0;
  
 +	__u32 alpha_old;
 +	__u32 acked_bytes;
 +
- 	/* If the ack is older than previous acks
+ 	/* If the ack is newer than sent or older than previous acks
  	 * then we can probably ignore it.
  	 */
-@@ -3678,6 +3780,54 @@
+@@ -3269,6 +3365,45 @@
  		tcp_ca_event(sk, CA_EVENT_SLOW_ACK);
  	}
  
++
 +	/* START: DCTCP Processing */
 +
 +	/* calc acked bytes */
-+	if(after(ack,tp->prior_ack)) {
-+	  acked_bytes = ack - tp->prior_ack;
++	if(after(ack,prior_snd_una)) {
++	  acked_bytes = ack - prior_snd_una;
 +	} else {
-+	  
-+	  if(flag & FLAG_WIN_UPDATE) {
-+	    /* Don't count when it is Window Updated ACK */
-+	    acked_bytes = 0; 
-+	    /* printk("acked_byte=0\n"); */
-+	  }else {
-+	    /* Count duplicate ACKs for Retransmission packets and so on as MSS size */
-+	    acked_bytes = inet_csk(sk)->icsk_ack.rcv_mss;
-+	  }
++	  acked_bytes = inet_csk(sk)->icsk_ack.rcv_mss;
 +	}
-+
++	
 +	if(flag & FLAG_ECE) 
 +	  tp->acked_bytes_ecn += acked_bytes;
 +
 +	tp->acked_bytes_total += acked_bytes;
-+
-+	tp->prior_ack = ack;
 +
 +	/* Expired RTT */
 +        if (!before(tp->snd_una,tp->next_seq)) {
@@ -323,7 +312,7 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_input.c linux-2.6.38.3-dctcp-rev1_0_0/net
 +	  if(tp->dctcp_alpha > 1024) tp->dctcp_alpha = 1024; /* round to 0-1024 */
 +
 +          /* printk("bytes_ecn= %d total= %d alpha: old= %d new= %d\n", */
-+	  /* 	  		 tp->acked_bytes_ecn, tp->acked_bytes_total, alpha_old, tp->dctcp_alpha); */
++	  /* 		 tp->acked_bytes_ecn, tp->acked_bytes_total, alpha_old, tp->dctcp_alpha); */
 +	  
 +	  tp->acked_bytes_ecn = 0;
 +	  tp->acked_bytes_total = 0;
@@ -335,7 +324,7 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_input.c linux-2.6.38.3-dctcp-rev1_0_0/net
  	/* We passed data and got it acked, remove any soft error
  	 * log. Something worked...
  	 */
-@@ -4478,7 +4628,7 @@
+@@ -4014,7 +4149,7 @@
  		goto queue_and_out;
  	}
  
@@ -344,8 +333,8 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_input.c linux-2.6.38.3-dctcp-rev1_0_0/net
  
  	if (tcp_try_rmem_schedule(sk, skb->truesize))
  		goto drop;
-@@ -4929,6 +5079,8 @@
- 	     __tcp_select_window(sk) >= tp->rcv_wnd) ||
+@@ -4421,6 +4556,8 @@
+ 	     && __tcp_select_window(sk) >= tp->rcv_wnd) ||
  	    /* We ACK each frame or... */
  	    tcp_in_quickack_mode(sk) ||
 +	    /* Delayed ACK is disabled or ... */
@@ -353,31 +342,56 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_input.c linux-2.6.38.3-dctcp-rev1_0_0/net
  	    /* We have out of order data. */
  	    (ofo_possible && skb_peek(&tp->out_of_order_queue))) {
  		/* Then ack it now */
-diff -Naur linux-2.6.38.3/net/ipv4/tcp_output.c linux-2.6.38.3-dctcp-rev1_0_0/net/ipv4/tcp_output.c
---- linux-2.6.38.3/net/ipv4/tcp_output.c	2011-04-14 13:03:56.000000000 -0700
-+++ linux-2.6.38.3-dctcp-rev1_0_0/net/ipv4/tcp_output.c	2011-04-19 22:47:58.000000000 -0700
-@@ -308,7 +308,7 @@
+@@ -5419,6 +5556,9 @@
+ }
+ 
+ EXPORT_SYMBOL(sysctl_tcp_ecn);
++EXPORT_SYMBOL(sysctl_tcp_delayed_ack);
++EXPORT_SYMBOL(sysctl_tcp_dctcp_enable);
++EXPORT_SYMBOL(sysctl_tcp_dctcp_shift_g);
+ EXPORT_SYMBOL(sysctl_tcp_reordering);
+ EXPORT_SYMBOL(sysctl_tcp_adv_win_scale);
+ EXPORT_SYMBOL(tcp_parse_options);
+diff -Naur linux-2.6.26/net/ipv4/tcp_minisocks.c linux-2.6.26-dctcp-rev1.1.0/net/ipv4/tcp_minisocks.c
+--- linux-2.6.26/net/ipv4/tcp_minisocks.c	2008-07-13 14:51:29.000000000 -0700
++++ linux-2.6.26-dctcp-rev1.1.0/net/ipv4/tcp_minisocks.c	2011-10-07 15:03:45.000000000 -0700
+@@ -398,6 +398,11 @@
+ 		newtp->rcv_wup = newtp->copied_seq = newtp->rcv_nxt = treq->rcv_isn + 1;
+ 		newtp->snd_sml = newtp->snd_una = newtp->snd_nxt = treq->snt_isn + 1;
+ 
++		/* Initialize DCTCP internal parameters */
++		newtp->next_seq = newtp->snd_nxt; 
++		newtp->acked_bytes_ecn = 0;
++		newtp->acked_bytes_total = 0;
++
+ 		tcp_prequeue_init(newtp);
+ 
+ 		tcp_init_wl(newtp, treq->snt_isn, treq->rcv_isn);
+diff -Naur linux-2.6.26/net/ipv4/tcp_output.c linux-2.6.26-dctcp-rev1.1.0/net/ipv4/tcp_output.c
+--- linux-2.6.26/net/ipv4/tcp_output.c	2008-07-13 14:51:29.000000000 -0700
++++ linux-2.6.26-dctcp-rev1.1.0/net/ipv4/tcp_output.c	2011-10-07 14:41:50.000000000 -0700
+@@ -290,7 +290,7 @@
  	struct tcp_sock *tp = tcp_sk(sk);
  
  	tp->ecn_flags = 0;
--	if (sysctl_tcp_ecn == 1) {
-+	if (sysctl_tcp_ecn == 1 || sysctl_tcp_dctcp_enable) {
- 		TCP_SKB_CB(skb)->flags |= TCPHDR_ECE | TCPHDR_CWR;
+-	if (sysctl_tcp_ecn) {
++	if (sysctl_tcp_ecn || sysctl_tcp_dctcp_enable) {
+ 		TCP_SKB_CB(skb)->flags |= TCPCB_FLAG_ECE | TCPCB_FLAG_CWR;
  		tp->ecn_flags = TCP_ECN_OK;
  	}
-@@ -878,6 +878,10 @@
- 	if (likely((tcb->flags & TCPHDR_SYN) == 0))
+@@ -600,6 +600,10 @@
  		TCP_ECN_send(sk, skb, tcp_header_size);
+ 	}
  
 +	/* In DCTCP, Assert ECT bit to all packets*/
 +	if(sysctl_tcp_dctcp_enable)
-+		INET_ECN_xmit(sk);
++	  INET_ECN_xmit(sk);
 +
  #ifdef CONFIG_TCP_MD5SIG
  	/* Calculate the MD5 hash, as we have all we need now */
  	if (md5) {
-@@ -2623,6 +2627,11 @@
- 	tcp_init_nondata_skb(buff, tp->write_seq++, TCPHDR_SYN);
+@@ -2352,6 +2356,11 @@
+ 	tcp_init_nondata_skb(buff, tp->write_seq++, TCPCB_FLAG_SYN);
  	TCP_ECN_send_syn(sk, buff);
  
 +	/* Initialize DCTCP internal parameters */
@@ -388,7 +402,7 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_output.c linux-2.6.38.3-dctcp-rev1_0_0/ne
  	/* Send it off. */
  	TCP_SKB_CB(buff)->when = tcp_time_stamp;
  	tp->retrans_stamp = TCP_SKB_CB(buff)->when;
-@@ -2659,6 +2668,10 @@
+@@ -2385,6 +2394,10 @@
  	int ato = icsk->icsk_ack.ato;
  	unsigned long timeout;
  
@@ -399,7 +413,7 @@ diff -Naur linux-2.6.38.3/net/ipv4/tcp_output.c linux-2.6.38.3-dctcp-rev1_0_0/ne
  	if (ato > TCP_DELACK_MIN) {
  		const struct tcp_sock *tp = tcp_sk(sk);
  		int max_ato = HZ / 2;
-@@ -2710,6 +2723,10 @@
+@@ -2436,6 +2449,10 @@
  {
  	struct sk_buff *buff;
  
