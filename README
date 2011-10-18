@@ -62,7 +62,7 @@ dctcp_alpha = (1-g) * dctcp_alpha + g * F.
 [Changelog]
 
 2011 Apl 29 - Rev1.0.0
-2011 Set  1 - Rev1.1.0
+2011 Sep  1 - Rev1.1.0
 
 - Fixed a bug in initializing DCTCP internal parameters in the case of passive open
 - Erased the unneccesary variable tp->prior_ack
