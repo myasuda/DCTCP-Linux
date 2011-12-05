@@ -69,5 +69,3 @@ dctcp_alpha = (1-g) * dctcp_alpha + g * F.
 - Changed the setting for enabling dctcp, for enabling dctcp, both 
   net.ipv4.tcp_dctcp_enable and net.ipv4.tcp_ecn are needed to be 1.
 
-
-
