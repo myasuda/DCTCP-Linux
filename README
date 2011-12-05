@@ -30,7 +30,7 @@ DCTCP (over Reno) is enabled by the following commands.
 
 sysctl -w net.ipv4.tcp_congestion_control=reno
 sysctl -w net.ipv4.tcp_dctcp_enable=1
-sysctl -w net.ipv4.net.ipv4.tcp_ecn=1
+sysctl -w net.ipv4.tcp_ecn=1
 
 DCTCP is enabled when kernel parameter net.ipv4.tcp_dctcp_enable is 1
 (default value is 0) and net.ipv4.tcp_ecn is 1. (default value is 2).
