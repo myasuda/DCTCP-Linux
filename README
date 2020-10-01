@@ -16,9 +16,9 @@ Mohammad Alizadeh, Stanford University
 [How to Apply Patch]
 
 wget http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.38.3.tar.bz2
-tar jxvf linux-2.6.38.3.tar.bz2
-cp dctcp-2.6.38.3-rev1.1.0.patch linux-2.6.38.3
-cd linux-2.6.38.3
+tar jxvf linux-2.6.38.3.tar.bz2              //cmd to extract file
+cp dctcp-2.6.38.3-rev1.1.0.patch linux-2.6.38.3     //change the directory
+cd linux-2.6.38.3                               //change directory
 patch -p1 < dctcp-2.6.38.3-rev1.0.0.patch
 
 After applying patch, please compile the kernel as usual.
@@ -28,7 +28,7 @@ No special kernel configuration is necessary for DCTCP.
 
 DCTCP (over Reno) is enabled by the following commands.
 
-sysctl -w net.ipv4.tcp_congestion_control=reno
+sysctl -w net.ipv4.tcp_congestion_control=reno         //system control
 sysctl -w net.ipv4.tcp_dctcp_enable=1
 sysctl -w net.ipv4.tcp_ecn=1
 
